@@ -2,10 +2,10 @@ from htmlcreator.page_elements import *
 import random
 
 
-MAXIMUM_NUMBER_OF_ELEMENTS_IN_PAGE = 999_999
+tabulation = " " * 4
 
 
-def _dict_to_html_tags(dict_):
+def _dict_to_html_tags(dict_) -> str:
     out = ''
     i = 0
     for key in dict_:
@@ -18,13 +18,13 @@ def _dict_to_html_tags(dict_):
     return out
 
 
-def _dict_to_css(dict_):
+def _dict_to_css(dict_) -> str:
     out = ''
     for selector in dict_:
         out += "\n" + selector + " {\n"
-        for property in dict_[selector]:
-            value = dict_[selector][property]
-            out += "    " + property + ": " + value + ";\n"
+        for property_ in dict_[selector]:
+            value = dict_[selector][property_]
+            out += tabulation + property_ + ": " + value + ";\n"
         out += "}\n"
 
     return out
@@ -34,7 +34,7 @@ generated_random_numbers: set = {0}
 generated_random_numbers.remove(0)
 
 
-def _loop_in_element(_container, page: Page, is_root=False, tabulation=0) -> str:
+def _loop_in_element(_container, page: Page, is_root=False, tabulation_number=0) -> str:
     out = ""
     if not is_root:
         container = _container.content
@@ -46,14 +46,14 @@ def _loop_in_element(_container, page: Page, is_root=False, tabulation=0) -> str
 
         if isinstance(element, Tag):
 
-            has_class = element.attributes.get("class", None) is not None
+            # has_class = element.attributes.get("class", None) is not None
 
-            if isinstance(element.id_, IDNotSpecified) and not has_class:
-                rand = str(random.randint(MAXIMUM_NUMBER_OF_ELEMENTS_IN_PAGE/9, MAXIMUM_NUMBER_OF_ELEMENTS_IN_PAGE))
-                while rand in generated_random_numbers:
-                    rand = str(random.randint(MAXIMUM_NUMBER_OF_ELEMENTS_IN_PAGE/9, MAXIMUM_NUMBER_OF_ELEMENTS_IN_PAGE))
-                id_ = "id" + rand
-                generated_random_numbers.add(rand)
+            if element.id_ == "":
+                random_number = str(random.randint(100_000, 999_999))
+                while random_number in generated_random_numbers:
+                    random_number = str(random.randint(100_000, 999_999))
+                id_ = "id" + random_number
+                generated_random_numbers.add(random_number)
 
             else:
                 id_ = element.id_
@@ -68,35 +68,35 @@ def _loop_in_element(_container, page: Page, is_root=False, tabulation=0) -> str
             style = element.style
             if len(style) > 0:
                 for property_ in style:
-                    if has_class:
-                        selector = "." + element.attributes["class"]
-                    else:
-                        selector = "#" + id_
+                    # if has_class:
+                    #     selector = "." + element.attributes["class"]
+                    # else:
+                    #     selector = "#" + id_
+                    selector = "#" + id_
                     page.add_css_element(selector, property_, style[property_])
 
-            out += "    " * tabulation
+            out += tabulation * tabulation_number
 
             out += "<"
             out += html_name
+
             out += " "
-            # out += (" " if element.attributes else "")
             attributes_ = element.attributes
-            if not has_class:
-                attributes_["id"] = id_
+            attributes_["id"] = id_
             out += _dict_to_html_tags(attributes_)
+
             out += ">"
 
-            if len(element.content) > 0 and isinstance(element.content[0], Tag):
-                out += "\n"
-
             if element.content:
+                if isinstance(element.content[0], Tag):
+                    out += "\n"
 
                 out += _loop_in_element(_container=element,
-                                        tabulation=tabulation + 1,
+                                        tabulation_number=tabulation_number + 1,
                                         page=page)
 
                 if isinstance(element.content[0], Tag):
-                    out += "    " * tabulation
+                    out += tabulation * tabulation_number
 
             out += f"</{html_name}>" + "\n"
 
@@ -108,32 +108,32 @@ def _loop_in_element(_container, page: Page, is_root=False, tabulation=0) -> str
     return out
 
 
-def generate_html(out_file: str, page) -> None:
-    title = page.title
-    _content = page.body_content
+def generate_html(page) -> str:
+    title: str = page.title
+    _content: list = page.body_content
 
-    content = _loop_in_element(_content, is_root=True, page=page)
-    content = content.replace("\n", "\n    ")
+    content: list = _loop_in_element(_content, is_root=True, page=page)
+    content = content.replace("\n", "\n" + tabulation)
 
-    style = _dict_to_css(page.style)
-    style = style.replace("\n", "\n        ")
-    style = style.removesuffix("    ")
+    style: str = _dict_to_css(page.style)
+    style = style.replace("\n", "\n" + tabulation * 2)
+    style = style.removesuffix(tabulation)
 
-    out = f"""\
+    out: str = f"""\
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>{title}</title>
-    {"<style>" if style else ""}{style}{"</style>" if style else ""}
+{tabulation}<meta charset="UTF-8">
+{tabulation}<title>{title}</title>
+{tabulation}{"<style>" + style + "</style>" if style else ""}
 </head>
 
 <body>
 
-    {content}
+{tabulation}{content}
 </body>
 
 </html>"""
 
-    open(out_file, mode="w").write(out)
+    return out

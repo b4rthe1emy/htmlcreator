@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import typing
 
 CSS_GENERIC_FONTS = ["monospace", "serif", "sans-serif", "cursive", "fantasy"]
 
@@ -35,7 +36,7 @@ class Tag:
     attributes: dict
     style: dict
     content: tuple
-    id_: str = IDNotSpecified()
+    id_: typing.Optional[str] = ""
 
     def check_valid(self) -> None | TypeError:
         if not self.content:
