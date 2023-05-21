@@ -3,17 +3,14 @@ import typing
 
 CSS_GENERIC_FONTS = ["monospace", "serif", "sans-serif", "cursive", "fantasy"]
 
-class IDNotSpecified:
-    pass
-
 class Page:
 
-    def add_css_element(self, selector: str, property: str, value: str):
+    def add_css_element(self, selector: str, property_: str, value: str) -> None:
         if self.style.get(selector) == None:
             self.style[selector] = {}
-        self.style[selector][property] = value
+        self.style[selector][property_] = value
 
-    def __init__(self, title: str, body_content: list, style: dict[str, dict[str, str]]):
+    def __init__(self, title: str, body_content: list, style: dict[str, dict[str, str]]) -> None:
         self.title: str = title
         self.body_content: list = body_content
         self.style: dict[str, dict[str, str]] = style
@@ -21,14 +18,14 @@ class Page:
         self.add_css_element("*", "margin", "0")
         self.add_css_element("*", "padding", "0")
 
-    def set_main_font_family(self, _font_family: str):
+    def set_main_font_family(self, font_family: str) -> None:
 
-        if _font_family.split(" ")[0] in CSS_GENERIC_FONTS:
-            font_family = _font_family.split(" ")[0]
+        if font_family.split(" ")[0] in CSS_GENERIC_FONTS:
+            _font_family = font_family.split(" ")[0]
         else:
-            font_family = '"' + _font_family.split(" ")[0] + '"'
+            _font_family = '"' + font_family.split(" ")[0] + '"'
 
-        self.add_css_element("*", "font-family", font_family)
+        self.add_css_element("*", "font-family", _font_family)
 
 
 @dataclass
